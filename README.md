@@ -48,6 +48,9 @@ We evaluated the Top-5 retrieved documents (Precision@5) using manual relevance 
 Open your terminal or command prompt and install the required Python libraries:
 ```bash
 pip install pandas numpy nltk scikit-learn sentence-transformers matplotlib seaborn streamlit
+```
 
 go to folder from CLI then run 
+like: cd /d D:\khaled\projects\NLP_ intelligent search engine
+```bash
 streamlit run ISP_application.py"# intelligent_search_engine-NLP-" 
