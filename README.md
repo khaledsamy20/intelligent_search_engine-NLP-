@@ -51,7 +51,7 @@ pip install pandas numpy nltk scikit-learn sentence-transformers matplotlib seab
 ```
 
 go to folder from CLI then run 
-like: cd /d D:\khaled\projects\NLP_ intelligent search engine
+like: 
 ```bash
 cd /d D:\khaled\projects\NLP_ intelligent search engine
 streamlit run ISE_application.py
