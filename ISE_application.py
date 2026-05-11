@@ -36,6 +36,9 @@ def load_data_and_models():
     bert = SentenceTransformer('all-MiniLM-L6-v2')
     embeddings = pickle.load(open('sentence_embeddings.pkl', 'rb'))
 
+    w2v_mod = pickle.load(open('w2v_model.pkl', 'rb'))
+    w2v_embeds = pickle.load(open('w2v_embeddings.pkl', 'rb'))
+
     # initialize symSpell dah zy kamos bngeb mno elkalam elsa7
     sym_spell = SymSpell(max_dictionary_edit_distance=2, # aksa 3dd a5ta2 ys77ha felklma
     prefix_length=7)
@@ -43,9 +46,9 @@ def load_data_and_models():
         "symspellpy", "frequency_dictionary_en_82_765.txt")
     sym_spell.load_dictionary(dictionary_path, term_index=0, count_index=1)
 
-    return df, vec, matrix, bert, embeddings, sym_spell
+    return df, vec, matrix, bert, embeddings, w2v_mod, w2v_embeds, sym_spell
 
-data, tfidf, tfidf_matrix, bert_model, sentence_embeddings, sym_spell = load_data_and_models()
+data, tfidf, tfidf_matrix, bert_model, sentence_embeddings, w2v_model, w2v_embeddings, sym_spell = load_data_and_models()
 
 def correct_query(query):
     # 34an ys77 kaza kelma m3 b3d we momken yjoin kalam zy canot->cannot
@@ -70,9 +73,24 @@ def search_bert(query, k=5):
     result['Similarity Score'] = similarities[top_k_idx]
     return result
 
+def get_doc_embedding(tokens, model, vector_size):
+    valid_words = [word for word in tokens if word in model.wv.key_to_index]
+    if not valid_words:
+        return np.zeros(vector_size)
+    return np.mean(model.wv[valid_words], axis=0)
+
+def search_word2vec(query, k=5):
+    processed_query = text_preprocessing(query).split()
+    query_vec = get_doc_embedding(processed_query, w2v_model, 100).reshape(1, -1)
+    similarities = cosine_similarity(query_vec, w2v_embeddings).flatten()
+    top_k_idx = similarities.argsort()[-k:][::-1]
+    result = data.iloc[top_k_idx][['Review Title', 'Review Text']].copy()
+    result['Similarity Score'] = similarities[top_k_idx]
+    return result
+
 st.title("Intelligent Search Engine")
 
-model_choice = st.radio("Choose Model:", ("TF-IDF", "BERT"))
+model_choice = st.radio("Choose Model:", ("TF-IDF", "Word2Vec", "BERT"))
 raw_query = st.text_input("Enter your search query:")
 
 if st.button("Search"):
@@ -86,6 +104,8 @@ if st.button("Search"):
             # 3. Perform the search
             if model_choice == "TF-IDF":
                 results = search_tfidf(corrected_query)
+            elif model_choice == "Word2Vec":
+                results = search_word2vec(corrected_query)
             else:
                 results = search_bert(corrected_query)
             # 4. Display results
