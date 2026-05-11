@@ -5,6 +5,7 @@ import pandas as pd
 import pickle
 import re
 import nltk
+import numpy as np
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from sklearn.metrics.pairwise import cosine_similarity
